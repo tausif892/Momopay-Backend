@@ -1,0 +1,19 @@
+{
+  "name": "mompay",
+  "version": "1.0.0",
+  "description": "This project will be the backennd of Momopay",
+  "license": "ISC",
+  "author": "Mohammad Tausif",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.80.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-async-handler": "^1.2.0"
+  }
+}
