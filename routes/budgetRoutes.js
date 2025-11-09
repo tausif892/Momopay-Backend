@@ -1,9 +1,9 @@
 import express from "express"
 const router = express();
 
-const {getHistory, transaction} = require("../controllers/budgetController.js");
+import { getHistory, transaction, getCategories } from "/momopay/controllers/budgetController.js";
 
-router.post("/budget/transaction",transaction);
-router.post("/budget/history",getHistory);
-
-module.exports = router;
+router.post("/transaction",transaction);
+router.post("/history",getHistory);
+router.post("/categories",getCategories);
+export default router;

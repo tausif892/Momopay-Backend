@@ -1,30 +1,37 @@
 import {createClient} from "@supabase/supabase-js";
 import asyncHandler from "express-async-handler";
+import dotenv from "dotenv";
+dotenv.config();
 
 let db;
-
 try{
-    
     db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 }catch(err){
     console.log(`DB CONNECTION ERROR`);
-    exit(1);
 }
 
 console.log(`DB CONNECTED`);
 
-async function usersinsert(table, username, password){
+export async function usersinsert(table, username, password){
+    console.log(`TABLE NAME: ${table}`);
+    console.log(`USERNAME: ${username}`);
+    console.log(`PASSWORD: ${password}`);
+    db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
     const {data, error} = await db.from(table)
     .insert([{username,password}])
 
     if (error){
-        console.log(`USERS INSERTION ERROR`);
+        console.log(`USERS INSERTION ERROR ${JSON.stringify(error,null,2)}`);
         return false;
     }  
     return true;
 }
 
-async function usersSearch(table, param1, param2){
+export async function usersSearch(table, param1, param2){
+    console.log(`TABLE NAME: ${table}`);
+    console.log(`USERNAME: ${param1}`);
+    console.log(`PASSWORD: ${param2}`);
+    db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
     const {data, error} = await db.from(table)
     .select("*")
     .eq("username",param1)
@@ -34,28 +41,81 @@ async function usersSearch(table, param1, param2){
         console.log(`ERROR IN USERS SEARCHING`);
         return false;
     }
-    return data.length>0;
+    return data;
 }
 
 
-const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
     const {username, password} = req.body;
-
-    const found = await usersSearch(username, password);
+    let table = "users";
+    const found = await usersSearch(table,username, password);
     if (!found){
         return res.status(404).json({message: "Invalid username or password"});
     }
-    res.status(200).json({message: "LOGIN SUCCESS"});
-})
+    res.status(200).json({message: "LOGIN SUCCESS ",content: JSON.stringify(found)});
+});
 
-const register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
     const {username, password} = req.body;
-
-    const insert = await usersinsert(username, password);
+    let table="users";
+    const insert = await usersinsert(table,username, password);
     if (!insert){
         return res.status(401).json({message: "INSERTION FAILED"});
     }
-    res.status(200).json({message: "REGISTRATION SUCCESS"});
+    res.status(200).json({message: "REGISTRATION SUCCESS", content: JSON.stringify(insert)});
+});
+
+export const getBalance = asyncHandler(async (req,res) => {
+    const {username} = req.body;
+
+    if (!username){
+        res.status(401).json({"message": "USERNAME OR PASSWORD IS MISSING"});
+    }  
+    
+    const { data, error } = await db
+    .from("users").select("max_limit").eq("username", username); 
+    
+    if (error){
+        res.status(500).json({"error": error, "function": "UPDATE BALANCE"});
+    }
+
+    res.status(200).json({"message": "BALANCE FOUND", "balance": data});
+});
+
+export const updateBalance = asyncHandler(async (req,res) => {
+    const {username, newBalance} = req.body;
+
+    if (!username || !newBalance){
+        res.status(401).json({"message": "USERNAME OR PASSWORD IS MISSING"});
+    }  
+    
+    const { data, error } = await db
+    .from("users")
+    .update({ max_limit: newBalance })
+    .eq("username", username); 
+    
+    if (error){
+        res.status(500).json({"error": error, "function": "UPDATE BALANCE"});
+    }
+
+    res.status(200).json({"message": "BALANCE UPDATED"});
+});
+
+export const changePassword = asyncHandler(async (req,res) => {
+    const {username, password} = req.body;
+
+    if (!username || !password){
+        res.status(401).json("MALFORMED REQUEST CHANGE PASSWORD");
+    }
+
+    const {data, error} = await db.from("users").update("password",password).eq("username",username);
+
+    if (error){
+        res.status(500).json({"message": "CHANGE PASSWORD DB ERROR", "error": error});
+    }
+    res.status(200).json({"message":"PASSWORD CHANGED SUCCESSFULLY"});
 })
 
-module.exports = {login, register};
+
+
+export default {login, register, getBalance, updateBalance, changePassword};

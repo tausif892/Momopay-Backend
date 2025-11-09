@@ -3,9 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 
-import authRoutes from "./routes/authRoutes.js";
-import budgetRoutes from "./routes/budgetRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
+import authRoutes from "/momopay/routes/authRoutes.js";
+import budgetRoutes from "/momopay/routes/budgetRoutes.js";
+//import paymentRoutes from "/momopay/routes/paymentRoutes.js";
 
 dotenv.config();
 
@@ -23,7 +23,7 @@ app.use(cors());
 
 app.use("/auth", authRoutes);
 app.use("/budget", budgetRoutes);
-app.use("/payment", paymentRoutes);
+//app.use("/payment", paymentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
