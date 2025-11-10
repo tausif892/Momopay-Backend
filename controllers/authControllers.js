@@ -114,7 +114,30 @@ export const changePassword = asyncHandler(async (req,res) => {
         res.status(500).json({"message": "CHANGE PASSWORD DB ERROR", "error": error});
     }
     res.status(200).json({"message":"PASSWORD CHANGED SUCCESSFULLY"});
-})
+});
+
+export const getWards = asyncHandler(async (req,res)=>{
+    const {username}=req.body;
+
+    const {data,error} = await db.from("users").select("wards").eq("username",username);
+
+    if (error){
+        console.log(`THERE IS AN ERROR IN GETTING WARDS ${JSON.stringify(error)}`);
+    }
+    res.status(200).json({"message":"GETTING WARDS SUCCESS", "wards":data});
+});
+
+export const putWards = asyncHandler(async(req,res)=>{
+    const {username, wards} = req.body;
+    const wardsArray = Array.isArray(wards) ? wards : [wards];
+    const {data,error} = await db.from("users").update({"wards":wardsArray}).eq("username",username);
+
+    if (error){
+        console.log(`ERROR IN PUTTING WARDS ${JSON.stringify(error)}`);
+        return res.json(500).message({"message":"ERROR IN DB"})
+    }
+    res.status(200).json({"message":"PUTTING WARDS SUCCESSFUL","wards":wards});
+});
 
 
 
